@@ -23,7 +23,7 @@ RUN adduser -u $USER_ID -s /bin/bash -D $USER_NAME
 
 
 WORKDIR /home/$USER_NAME
-# install kubectl
+# install latest stable kubectl
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl" \
     && chmod 755 ./kubectl \
     && mv kubectl /usr/local/bin

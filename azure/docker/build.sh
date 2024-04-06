@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# build.sh for docker container to run aws cli and aws-mfa auth tool
-#          also for terraform and kubernetes clients and utils
-# Tom Daly : Aug 2023 
+# build.sh for docker container to run Azure CLI in a container and include 
+#          terraform and kubernetes clients and utils
+# Tom Daly : April 2024 
 
 ################################################################################
 # Function: showUsage
@@ -53,8 +53,8 @@ DOCKER_IMAGE_NAME="azure-container:1"
 USER_NAME=$(whoami)
 USER_ID=$(id -u $USER_NAME)
 ARCH=`dpkg --print-architecture`
-TERRAFORM_VERSION="1.7.2"
-HELM_VERSION="3.14.0"
+TERRAFORM_VERSION="1.7.5"
+HELM_VERSION="3.14.3"
 RUN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # the directory that this script is run from 
 INSTALL_DIR="$RUN_DIR/install"
 
