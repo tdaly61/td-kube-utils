@@ -2,7 +2,7 @@
 
 ## Description
 
-ndogo is Swahilli for *small* and ndogo-loop deployment of vNext (beta) is a *small* simple, scripted/automated installer for Mojaloop vNext. For details on the Mojaloop vNext please refer to the Mojaloop reference architecture available from (http://mojaloop.io). The ndogo-loop vNext install mode is for  showcasing Mojaloop vNext, development, testing, workshops, integration testing, performance testing, learning, and more. ndogo-loop mode is designed to support people and organisations interested in Mojaloop vNext. However, it is crucial to note that ndogo-loop is **not intended for production use.**"
+ndogo is Swahili for *small* and ndogo-loop deployment of vNext (beta) is a *small* simple, scripted/automated installer for Mojaloop vNext. For details on the Mojaloop vNext please refer to the Mojaloop reference architecture available from (http://mojaloop.io). The ndogo-loop vNext install mode is for  showcasing Mojaloop vNext, development, testing, workshops, integration testing, performance testing, learning, and more. ndogo-loop mode is designed to support people and organisations interested in Mojaloop vNext. However, it is crucial to note that ndogo-loop is **not intended for production use.**"
 
 The goal is to make it realistic, easy, quick, scriptable and cost effective to deploy Mojaloop vNext in a variety of local or cloud environments.
 - realistic: running a full kubernetes stack , so you can do real-world tests
@@ -24,11 +24,11 @@ Example environments include:-
 Assuming you have an x86_64 or ARM64 environment running Ubuntu release 22 and are logged in as a non-root user (e.g. mluser)
 ```bash
 login as nduser                                                       # login as  a non-root user e.g. nduser
-git clone --branch dev   https://github.com/tdaly6/td-kube-utils.git    # clone vNext repo
+git clone --branch dev https://github.com/tdaly6/td-kube-utils.git    # clone td-kube-utils repo 
 cd ./td-kube-utils/vm/ndogo-loop             # cd to ndogo-loop dir
 sudo ./ndogo-loop-k8s.sh -m install -k k3s -v 1.28                     # install and configure k3s v1.28
 source $HOME/.bashrc                                                  # or logout/log in again to set env
-sudo ./ttk-interim-fix.sh                                             # ** do this on ARM64 ONLY [Note TBD] **
+sudo ./ttk-interim-fix.sh                                             # ** do this on ARM64 ONLY [Note TTK on ARM is TBD] **
 ./ndogo-loop-vnext.sh -m install_ml                                    # configure and deploy vNext
 ```
 
