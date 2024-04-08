@@ -24,11 +24,11 @@ Example environments include:-
 Assuming you have an x86_64 or ARM64 environment running Ubuntu release 22 and are logged in as a non-root user (e.g. mluser)
 ```bash
 login as nduser                                                       # login as  a non-root user e.g. nduser
-git clone --branch TODO  https://github.com/mojaloop/platform-shared-tools.git    # clone vNext repo
-cd ./platform-shared-tools/packages/installer/ndogo-loop               # cd to ndogo-loop dir
+git clone --branch dev   https://github.com/tdaly6/td-kube-utils.git    # clone vNext repo
+cd ./td-kube-utils/vm/ndogo-loop             # cd to ndogo-loop dir
 sudo ./ndogo-loop-k8s.sh -m install -k k3s -v 1.28                     # install and configure k3s v1.28
 source $HOME/.bashrc                                                  # or logout/log in again to set env
-sudo ./ttk-interim-fix.sh                                             # ** do this on ARM64 ONLY **
+sudo ./ttk-interim-fix.sh                                             # ** do this on ARM64 ONLY [Note TBD] **
 ./ndogo-loop-vnext.sh -m install_ml                                    # configure and deploy vNext
 ```
 
