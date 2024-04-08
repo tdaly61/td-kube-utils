@@ -21,9 +21,9 @@ Example environments include:-
 2. using ndogo-loop you can easily deploy Mojaloop vNext to a single Raspberry PI 4's with 8GB Ram (more detail on this is planned) 
 
 # Installation instructions
-Assuming you have an x86_64 or ARM64 environment running Ubuntu release 22 and are logged in as a non-root user (e.g. mluser)
+Assuming you have an x86_64 or ARM64 environment running Ubuntu release 22 and are logged in as a non-root user (e.g. nluser)
 ```bash
-login as nduser                                                       # login as  a non-root user e.g. nduser
+login as nluser                                                       # login as  a non-root user e.g. nduser
 git clone --branch dev https://github.com/tdaly6/td-kube-utils.git    # clone td-kube-utils repo 
 cd ./td-kube-utils/vm/ndogo-loop             # cd to ndogo-loop dir
 sudo ./ndogo-loop-k8s.sh -m install -k k3s -v 1.28                     # install and configure k3s v1.28
