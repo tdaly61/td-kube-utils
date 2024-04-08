@@ -1,6 +1,6 @@
 # install.sh 
 # this is the common /main install script for vnext
-# it should work across mini-loop , EKS and other kubernetes 
+# it should work across ndogo-loop , EKS and other kubernetes 
 # engines
 # T Daly 
 # Nov 2023
@@ -10,11 +10,11 @@ function install_vnext {
   record_memory_use "at_start"
   print_start_banner $ml_deploy_target
   get_arch_of_nodes
-  if [[ $ml_deploy_target == "mini-loop" ]]; then 
-    check_not_inside_docker_container   # mini-loop only 
+  if [[ $ml_deploy_target == "ndogo-loop" ]]; then 
+    check_not_inside_docker_container   # ndogo-loop only 
     set_arch  
     set_k8s_distro  
-    #check_arch   # mini-loop only 
+    #check_arch   # ndogo-loop only 
   elif [[ $ml_deploy_target == "EKS" ]]; then 
     check_access_to_cluster  # eks only 
   fi 

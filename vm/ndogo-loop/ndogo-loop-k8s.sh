@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# k8s.sh : install kubernetes k3s or microk8s on local os 
+# k8s.sh : install kubernetes k3s or microk8s on local (ubuntu) os 
 # Author:  Tom Daly 
-# Date :   Sept 2023 
+# Date :   April 2024 
 
 function check_pi {
     # this is to enable experimentation on raspberry PI which is WIP
@@ -19,7 +19,7 @@ function check_arch_ok {
     fi 
     if [[ ! "$k8s_arch" == "x86_64" ]] && [[ ! "$k8s_arch" == "arm64" ]]  ; then 
         printf "** Error: unrecognised architecture [%s] \n" $k8s_arch
-        printf "   mini-loop deployment of vNext only works on x86_64 or arm64\n"
+        printf "   ndogo-loop deployment of vNext only works on x86_64 or arm64\n"
         exit  
     fi
 } 
@@ -32,15 +32,15 @@ function check_resources_ok {
 
     # Check RAM 
     if [[ "$total_ram" -lt "$MIN_RAM" ]]; then
-        printf " ** Error : mini-loop currently requires $MIN_RAM GBs to run properly \n"
-        printf "    Please increase RAM available before trying to run mini-loop \n"
+        printf " ** Error : ndogo-loop currently requires $MIN_RAM GBs to run properly \n"
+        printf "    Please increase RAM available before trying to run ndogo-loop \n"
         exit 1 
     fi
     # Check free space 
         if [[  "$free_space" -lt "$MIN_FREE_SPACE" ]] ; then
-        printf " ** Warning : mini-loop currently requires %sGBs free storage in %s home directory  \n"  "$MIN_FREE_SPACE" "$k8s_user"
+        printf " ** Warning : ndogo-loop currently requires %sGBs free storage in %s home directory  \n"  "$MIN_FREE_SPACE" "$k8s_user"
         printf "    but only found %sGBs free storage \n"  "$free_space"
-        printf "    mini-loop installation will continue , but beware it might fail later due to insufficient storage \n"
+        printf "    ndogo-loop installation will continue , but beware it might fail later due to insufficient storage \n"
     fi
 } 
 
@@ -73,10 +73,10 @@ function set_linux_os_distro {
 }
 
 function check_os_ok {
-    printf "==> checking OS and kubernetes distro is tested with mini-loop scripts\n"
+    printf "==> checking OS and kubernetes distro is tested with ndogo-loop scripts\n"
     set_linux_os_distro
     if [[ ! $LINUX_OS == "Ubuntu" ]]; then
-        printf "** Error , mini-loop $MINILOOP_VERSION is only tested with Ubuntu OS at this time   **\n"
+        printf "** Error , ndogo-loop $MINILOOP_VERSION is only tested with Ubuntu OS at this time   **\n"
         exit 1
     fi 
     local os_version_ok=false
@@ -87,7 +87,7 @@ function check_os_ok {
         fi  
     done
     if [[ ! "$os_version_ok" == true ]]; then 
-        printf "** Error , mini-loop $MINILOOP_VERSION is not tested with Ubuntu OS version [ %s ] at this time \n" "$LINUX_VERSION"
+        printf "** Error , ndogo-loop $MINILOOP_VERSION is not tested with Ubuntu OS version [ %s ] at this time \n" "$LINUX_VERSION"
         printf "           current tested Ubuntu versions are :-  " 
         printf " [ %s ] " "${UBUNTU_OK_VERSIONS_LIST[@]}"
         printf "   **\n" 
@@ -115,7 +115,7 @@ function install_prerequisites {
 }
 
 function add_hosts {
-    printf "==> Mojaloop k8s install : update hosts file \n"
+    printf "==> Mojaloop vNext k8s install : update hosts file \n"
     ENDPOINTSLIST=(127.0.0.1 
     mongohost.local mongoexpress.local vnextadmin.local elasticsearch.local kafkaconsole.local fspiop.local 
     bluebank.local greenbank.local  ) 
@@ -125,7 +125,7 @@ function add_hosts {
     perl -p -i.bak -e 's/127\.0\.0\.1.*localhost.*$/$ENV{ENDPOINTS} /' /etc/hosts
     # TODO check the ping actually works > suggest cloud network rules if it doesn't
     #      also for cloud VMs might need to use something other than curl e.g. netcat ? 
-    ping  -c 2 vnextadmin
+    ping  -c 2 vnextadmin.local
 }
 
 function set_k8s_distro { 
@@ -155,7 +155,7 @@ function set_k8s_version {
     # printf "========================================================================================\n"
     # printf " set the k8s version to install  \n"
     # printf "========================================================================================\n\n"
-    # Users who want to run non-current versions of kubernetes will need to use earlier releases of mini-loop and 
+    # Users who want to run non-current versions of kubernetes will need to use earlier releases of ndogo-loop and 
     # and be aware that these are not being actively maintained
     if [ ! -z ${k8s_user_version+x} ] ; then
         # strip off any leading characters
@@ -188,27 +188,23 @@ function do_microk8s_install {
     # TODO : Microk8s can complain that This is insecure. Location: /var/snap/microk8s/2952/credentials/client.config
     printf "==> Installing Kubernetes MicroK8s & enabling tools (helm,ingress  etc) \n"
 
-    echo "==> Mojaloop Microk8s Install: installing microk8s release $k8s_user_version ... "
+    echo "==> Mojaloop vNext Microk8s Install: installing microk8s release $k8s_user_version ... "
     # ensure k8s_user has clean .kube/config 
     rm -rf $k8s_user_home/.kube >> /dev/null 2>&1 
 
     snap install microk8s --classic --channel=$K8S_VERSION/stable
     microk8s.status --wait-ready
-
-    #echo "==> Mojaloop Microk8s Install: enable helm ... "
     microk8s.enable helm3 
-    #echo "==> Mojaloop Microk8s Install: enable dns ... "
     microk8s.enable dns
-    echo "==> Mojaloop: enable storage ... "
+    echo "==> enable storage ... "
     microk8s.enable storage
-    #echo "==> Mojaloop: enable ingress ... "
     microk8s.enable ingress
 
-    echo "==> Mojaloop: add convenient aliases..." 
+    echo "==> add convenient aliases..." 
     snap alias microk8s.kubectl kubectl
     snap alias microk8s.helm3 helm
 
-    echo "==> Mojaloop: add $k8s_user user to microk8s group"
+    echo "==> add $k8s_user user to microk8s group"
     usermod -a -G microk8s $k8s_user
 
     # ensure .kube/config points to this new cluster and KUBECONFIG is not set in .bashrc
@@ -220,7 +216,7 @@ function do_microk8s_install {
 
 function do_k3s_install {
     printf "========================================================================================\n"
-    printf "Mojaloop k3s install : Installing Kubernetes k3s engine and tools (helm/ingress etc) \n"
+    printf "k3s install : Installing Kubernetes k3s engine and tools (helm/ingress etc) \n"
     printf "========================================================================================\n"
     # ensure k8s_user has clean .kube/config 
     rm -rf $k8s_user_home/.kube >> /dev/null 2>&1 
@@ -312,9 +308,8 @@ function install_k8s_tools {
     mv ./kustomize /usr/local/bin > /dev/null 2>&1
 }
 
-function add_helm_repos { 
-    # see readme at https://github.com/mojaloop/helm for required helm libs 
-    printf "==> add the helm repos required to install and run Mojaloop version 13.x \n" 
+function add_helm_repos {  
+    printf "==> add the helm repos required to install and run Mojaloop vNext  \n" 
     su - $k8s_user -c "helm repo add kiwigrid https://kiwigrid.github.io" > /dev/null 2>&1
     su - $k8s_user -c "helm repo add kokuwa https://kokuwaio.github.io/helm-charts" > /dev/null 2>&1  #fluentd 
     su - $k8s_user -c "helm repo add elastic https://helm.elastic.co" > /dev/null 2>&1
@@ -323,13 +318,12 @@ function add_helm_repos {
     su - $k8s_user -c "helm repo add mojaloop http://mojaloop.io/helm/repo/" > /dev/null 2>&1
     su - $k8s_user -c "helm repo add cowboysysop https://cowboysysop.github.io/charts/" > /dev/null 2>&1  # mongo-express
     su - $k8s_user -c "helm repo add redpanda-data https://charts.redpanda.com/ " > /dev/null 2>&1   # kafka console 
-
     su - $k8s_user -c "helm repo update" > /dev/null 2>&1
 }
 
 function configure_k8s_user_env { 
-    start_message="# ML_START start of config added by mini-loop #"
-    grep "start of config added by mini-loop" $k8s_user_home/.bashrc >/dev/null 2>&1
+    start_message="#NDOGO-START start of config added by ndogo-loop #"
+    grep "start of config added by ndogo-loop" $k8s_user_home/.bashrc >/dev/null 2>&1
     if [[ $? -ne 0  ]]; then 
         printf "==> Adding configuration for %s to %s .bashrc\n" "$k8s_distro" "$k8s_user"
         printf "%s\n" "$start_message" >> $k8s_user_home/.bashrc 
@@ -338,8 +332,8 @@ function configure_k8s_user_env {
         echo "complete -F __start_kubectl k " >>  $k8s_user_home/.bashrc
         echo "alias ksetns=\"kubectl config set-context --current --namespace\" " >>  $k8s_user_home/.bashrc
         echo "alias ksetuser=\"kubectl config set-context --current --user\" "  >>  $k8s_user_home/.bashrc 
-        echo "alias cdml=\"cd $k8s_user_home/mini-loop\" " >>  $k8s_user_home/.bashrc 
-        printf "#ML_END end of config added by mini-loop #\n" >> $k8s_user_home/.bashrc 
+        echo "alias cdml=\"cd $k8s_user_home/ndogo-loop\" " >>  $k8s_user_home/.bashrc 
+        printf "#NDOGO_END end of config added by ndogo-loop #\n" >> $k8s_user_home/.bashrc 
     else 
         printf "==> Configuration for .bashrc for %s for user %s already exists ..skipping\n" "$k8s_distro" "$k8s_user"
     fi
@@ -402,7 +396,7 @@ function check_k8s_installed {
     k8s_ready=`su - $k8s_user -c "kubectl get nodes" | perl -ne 'print  if s/^.*Ready.*$/Ready/'`
     if [[ ! "$k8s_ready" == "Ready" ]]; then 
         printf "** Error : kubernetes is not installed , please run $0 -m install -u $k8s_user \n"
-        printf "           before trying to install mojaloop \n "
+        printf "           before proceeding ...  \n "
         exit 1 
     fi
     printf "    [ ok ] \n"
@@ -410,8 +404,7 @@ function check_k8s_installed {
 
 function print_end_message { 
     printf "\n\n*********************** << success >> *******************************************\n"
-    printf "            -- mini-loop kubernetes install utility -- \n"
-    printf "  utilities for deploying kubernetes in preparation for Mojaloop deployment   \n"
+    printf "            -- ndogo-loop kubernetes install utility -- \n"
     printf "************************** << end  >> *******************************************\n\n"
 } 
 
@@ -452,7 +445,7 @@ echo "SCRIPTS_DIR=$SCRIPTS_DIR"
 REPO_BASE_DIR="$( cd $(dirname "$SCRIPTS_DIR")/../.. ; pwd )"
 echo "REPO_BASE_DIR=$REPO_BASE_DIR"
 
-DEFAULT_K8S_DISTRO="k3s"   # default to microk8s as this is what is in the mojaloop linux deploy docs.
+DEFAULT_K8S_DISTRO="k3s"   # default to k3s 
 K8S_VERSION="" 
 MINILOOP_VERSION="vNext"
 HELM_VERSION="3.12.0"  # Feb 2023 
@@ -502,8 +495,7 @@ while getopts "m:k:v:u:hH" OPTION ; do
 done
 
 printf "\n\n*********************************************************************************\n"
-printf "            -- mini-loop kubernetes install utility -- \n"
-printf "  utilities for deploying kubernetes in preparation for Mojaloop deployment \n"
+printf "            -- ndogo-loop kubernetes install utility -- \n"
 printf "************************* << start >> *******************************************\n\n"
 
 check_arch_ok 
@@ -520,7 +512,7 @@ if [[ "$mode" == "install" ]]  ; then
     install_prerequisites 
     add_hosts
     if [[ "$k8s_distro" == "microk8s" ]]; then 
-        printf "** WIP: mini-loop for vNext with Microk8s is not yet sufficiently tested \n"
+        printf "** WIP: ndogo-loop for vNext with Microk8s is not yet sufficiently tested \n"
         printf "        for example microk8s v1.28 install on Ubuntu 22.04 ARM64 seemed to have some issues \n"
         printf "        => please select k3s for now   *** \n"
         exit 1 
@@ -532,10 +524,10 @@ if [[ "$mode" == "install" ]]  ; then
     add_helm_repos 
     configure_k8s_user_env
     check_k8s_installed
-    printf "==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for mojaloop deployment \n" \
+    printf "==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for Mojaloop vNext deployment \n" \
                 "$k8s_distro" "$K8S_VERSION" "$k8s_user"
-    printf "    To deploy mojaloop, please su - %s from root or login as user [%s] and then \n"  "$k8s_user" "$k8s_user"
-    printf "    please execute %s/mini-loop-vnext.sh\n" "$RUN_DIR"
+    printf "    To deploy Mojaloop vNext, please su - %s from root or login as user [%s] and then \n"  "$k8s_user" "$k8s_user"
+    printf "    please execute %s/ndogo-loop-vnext.sh\n" "$RUN_DIR"
     print_end_message 
 elif [[ "$mode" == "delete" ]]  ; then
     delete_k8s 

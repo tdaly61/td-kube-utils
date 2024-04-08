@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# mini-loop-vnext.sh
+# ndogo-loop-vnext.sh
 #    - install mojaloop vNext in a light-weight, simple and quick fashion 
-#      for demo's testing and development, this mode is affectionately known as mini-loop         
+#      for demo's testing and development, this mode is affectionately known as ndogo-loop         
 # Author Tom Daly 
-# Date Nov 2023 
+# Date April 2024
 
 
 ################################################################################
@@ -30,7 +30,7 @@ source $REPO_BASE_DIR/packages/installer/scripts/shared-functions.sh
 # read in the main mojaloop install function 
 source $REPO_BASE_DIR/packages/installer/scripts/install.sh 
 
-set_deploy_target  # deploy targets are mini-loop, EKS as at Nov 2023   
+set_deploy_target  # deploy targets are ndogo-loop, EKS as at Nov 2023   
 
 # Process command line options as required
 while getopts "d:m:t:l:o:hH" OPTION ; do
