@@ -57,6 +57,42 @@ function check_user {
   fi
 }
 
+
+clone_if_needed() {
+    local repo_url="$1"
+    local destination_dir="$2"
+    local branch="$3"  # New parameter for branch name
+    
+    # Check if the destination directory exists and is a git repository
+    if [[ -d "$destination_dir/.git" ]]; then
+        # Check if there are any changes in the repository
+        if [[ -n $(git -C "$destination_dir" status --porcelain) ]]; then
+            echo "Local changes detected in $destination_dir. Resetting..."
+            git -C "$destination_dir" reset --hard HEAD
+        fi
+        # Check if there are any untracked files in the repository
+        if [[ -n $(git -C "$destination_dir" status --porcelain | grep "^??") ]]; then
+            echo "Untracked files detected in $destination_dir. Recloning..."
+            rm -rf "$destination_dir"
+            if [[ -n "$branch" ]]; then
+                git clone -b "$branch" "$repo_url" "$destination_dir"
+            else
+                git clone "$repo_url" "$destination_dir"
+            fi
+        else
+            echo "No local changes detected in $destination_dir"
+        fi
+    else
+        echo "$destination_dir does not exist or is not a git repository. Cloning..."
+        if [[ -n "$branch" ]]; then
+            git clone -b "$branch" "$repo_url" "$destination_dir"
+        else
+            git clone "$repo_url" "$destination_dir"
+        fi
+    fi
+}
+
+
 function check_repo_owner_not_root {
   # ensure that the user has not cloned the mojaloop (vNext) repo as the root user 
     dir_path=$1
@@ -70,7 +106,7 @@ function check_repo_owner_not_root {
 
 function check_not_inside_docker_container {
     if [ -f "/.dockerenv" ]; then
-        printf " ** Error: can't run mini-loop inside docker container \n"
+        printf " ** Error: can't run ndogo-loop inside docker container \n"
         exit 1 
     fi
 }
@@ -82,7 +118,7 @@ function check_access_to_cluster {
     printf " ** Error: Not connected to the kubernetes cluster \n"
     printf "           Possible causes are:- \n"
     printf "           - Cluster has not yet been created => see the README for creating cluster \n"
-    printf "           - if running mini-loop mode, the .bashrc has not yet been sourced or the user logged out/in \n" 
+    printf "           - if running ndogo-loop mode, the .bashrc has not yet been sourced or the user logged out/in \n" 
     printf "           - if using EKS mode then the AWS credentials have likely expired => run aws-mfa \n" 
     exit 1 
   fi
@@ -98,18 +134,18 @@ function check_manifests_dir_exists  {
 
 function set_deploy_target {
   # determine where we are deploying Mojaloop vNext 
-  # e.g.  into mini-loop in a single OS or EKS cluster in AWS 
+  # e.g.  into ndogo-loop in a single OS or EKS cluster in AWS 
   # note the options will expland if we add support for installs into AKS, OKE and other environments 
   # this is necessary as there are (very) subtle differences between environments 
   # but we still want to have essentiall one vNext install script no matter the environment 
   local script_name=`basename $0`
-  if [[ "$script_name" == "mini-loop-vnext.sh" ]]; then 
-      ML_DEPLOY_TARGET="mini-loop"
-  elif [[ "$script_name" == "eks-vnext.sh" ]]; then 
-      ML_DEPLOY_TARGET="eks"
+  if [[ "$script_name" == "ndogo-loop-vnext.sh" ]]; then 
+      ML_DEPLOY_TARGET="ndogo-loop"
+  elif [[ "$script_name" == "aks-vnext.sh" ]]; then 
+      ML_DEPLOY_TARGET="aks"
   else 
     printf "** Error the deploy target for Mojaloop vNext can't be determined from the script name \n"
-    printf "   the program name used is [ %s ] but expected mini-loop-vnext.sh or eks-vnext.sh ** \n" "$script_name" 
+    printf "   the program name used is [ %s ] but expected ndogo-loop-vnext.sh or eks-vnext.sh ** \n" "$script_name" 
     exit 1 
   fi 
 }
@@ -157,21 +193,21 @@ function check_k8s_version_is_current {
       printf "** Error: The current installed kubernetes release [ %s ] is not a current release \n" "$k8s_version"
       printf "          you must have a current kubernetes release installed to use this script \n"
       print_current_k8s_releases 
-      printf "          for releases of kubernetes earlier than v1.22 mini-loop 3.0 might be of use \n"
+      printf "          for releases of kubernetes earlier than v1.22 ndogo-loop 3.0 might be of use \n"
       printf "** \n"
       exit 1
   fi 
   printf "==> the installed kubernetes release is detected to be  [%s] \n" "$k8s_version"
 }
 
-function set_mojaloop_timeout { 
+function set_mojaloop_vnext_timeout { 
   ## Set timeout 
   if [[ ! -z "$tsecs" ]]; then 
     TIMEOUT_SECS=${tsecs}s
   else 
     TIMEOUT_SECS=$DEFAULT_HELM_TIMEOUT_SECS 
   fi
-  printf "==> Setting Mojaloop chart TIMEOUT_SECS to  [ %s ] \n" "$TIMEOUT_SECS"
+  printf "==> Setting Mojaloop vNext chart TIMEOUT_SECS to  [ %s ] \n" "$TIMEOUT_SECS"
 } 
 
 timer() {
@@ -197,9 +233,9 @@ function set_logfiles {
   fi 
   touch $LOGFILE
   touch $ERRFILE
-  printf "start : mini-loop Mojaloop local install utility [%s]\n" "`date`" >> $LOGFILE
+  printf "start : ndogo-loop Mojaloop local install utility [%s]\n" "`date`" >> $LOGFILE
   printf "================================================================================\n" >> $LOGFILE
-  printf "start : mini-loop Mojaloop local install utility [%s]\n" "`date`" >> $ERRFILE
+  printf "start : ndogo-loop Mojaloop local install utility [%s]\n" "`date`" >> $ERRFILE
   printf "================================================================================\n" >> $ERRFILE
   printf "==> logfiles can be found at %s and %s \n" "$LOGFILE" "$ERRFILE"
 }
@@ -207,7 +243,7 @@ function set_logfiles {
 function update_k8s_images_from_docker_files {
   printf "==> updating kubernetes image versions in %s from docker-compose files   \n" $MANIFESTS_DIR
   local yaml_files=("path/to/file1.yaml" "path/to/file2.yaml")  # Replace with your YAML file paths
-  compose_dir=$REPO_BASE_DIR/packages/deployment  
+  compose_dir=$VNEXT_LOCAL_REPO_DIR/packages/deployment  
   CURRENT_IMAGES_FROM_DOCKER_FILES=($(grep image $compose_dir/**/docker*yml | grep -v infra | grep mojaloop | cut -d ":" -f3,4))
   k8s_yaml_files=($(ls $MANIFESTS_DIR/**/*yaml))
   # for element in "${k8s_yaml_files[@]}"; do
@@ -248,7 +284,7 @@ function copy_k8s_yaml_files_to_tmp {
 
 function configure_extra_options {
   printf "==> configuring which Mojaloop vNext options to install   \n"
-  printf "    ** INFO: no extra options implemented or required for mini-loop vNext at this time ** \n"
+  printf "    ** INFO: no extra options implemented or required for ndogo-loop vNext at this time ** \n"
   # for mode in $(echo $install_opt | sed "s/,/ /g"); do
   #   case $mode in
   #     logging)
@@ -275,7 +311,7 @@ function set_and_create_namespace {
   printf "==> Setting NAMESPACE to [ %s ] \n" "$NAMESPACE"
 }
 
-function modify_local_mojaloop_yaml_and_charts {
+function modify_local_mojaloop_vnext_yaml_and_charts {
   if [[ "$#" -ne 2 ]]; then 
       printf "\n** Error: insufficient params passed to [%s] \n" "${FUNCNAME[0]}"
       exit 1
@@ -345,18 +381,18 @@ function add_helm_repos {
 }
 
 
-function delete_mojaloop_infra_release {
+function delete_mojaloop_vnext_infra_release {
   printf "==> delete resources in the mojaloop [ infrastructure ] layer " 
-  ml_exists=`helm ls -a --namespace $NAMESPACE | grep $HELM_INFRA_RELEASE | awk '{print $1}' `
-  if [ ! -z $ml_exists ] && [ "$ml_exists" == "$HELM_INFRA_RELEASE" ]; then 
+  mlvn_exists=`helm ls -a --namespace $NAMESPACE | grep $HELM_INFRA_RELEASE | awk '{print $1}' `
+  if [ ! -z $mlvn_exists ] && [ "$mlvn_exists" == "$HELM_INFRA_RELEASE" ]; then 
     helm delete $HELM_INFRA_RELEASE --namespace $NAMESPACE >> $LOGFILE 2>>$ERRFILE
     sleep 2
   else 
     printf "\n    [ infrastructure services release %s not deployed => nothing to delete ]   " $HELM_INFRA_RELEASE
   fi
   # now check helm infra release is gone 
-  ml_exists=`helm ls -a --namespace $NAMESPACE | grep $HELM_INFRA_RELEASE | awk '{print $1}' `
-  if [ ! -z $ml_exists ] && [ "$ml_exists" == "$HELM_INFRA_RELEASE" ]; then 
+  mlvn_exists=`helm ls -a --namespace $NAMESPACE | grep $HELM_INFRA_RELEASE | awk '{print $1}' `
+  if [ ! -z $mlvn_exists ] && [ "$mlvn_exists" == "$HELM_INFRA_RELEASE" ]; then 
       printf "\n** Error: helm delete possibly failed \n" "$HELM_INFRA_RELEASE"
       printf "   run helm delete %s manually   \n" $HELM_INFRA_RELEASE
       printf "   also check the pods using kubectl get pods --namespace   \n" $HELM_INFRA_RELEASE
@@ -396,8 +432,8 @@ function delete_mojaloop_infra_release {
 
 function install_infra_from_local_chart  {
   local infra_dir=$1
-  printf "start : mini-loop Mojaloop vNext install infrastructure services [%s]\n" "`date`" 
-  delete_mojaloop_infra_release
+  printf "start : ndogo-loop Mojaloop vNext install infrastructure services [%s]\n" "`date`" 
+  delete_mojaloop_vnext_infra_release
   repackage_infra_helm_chart $infra_dir
   # install the chart
   printf  "==> deploy Mojaloop vNext infrastructure via %s helm chart and wait for upto %s  secs for it to be ready \n" "$ML_RELEASE_NAME" "$TIMEOUT_SECS"
@@ -478,7 +514,7 @@ check_pods_status() {
   return 1
 }
 
-function delete_mojaloop_layer() { 
+function delete_mojaloop_vnext_layer() { 
   local app_layer="$1"
   local layer_yaml_dir="$2"
   printf "==> delete resources  in the mojaloop [ %s ] application layer " $app_layer
@@ -499,11 +535,11 @@ function delete_mojaloop_layer() {
   fi 
 }
 
-function install_mojaloop_layer() { 
+function install_mojaloop_vnext_layer() { 
   local app_layer="$1"
   local layer_yaml_dir="$2"
   printf "==> installing the mojaloop [ %s ] application layer using yamls from [ %s ] \n" $app_layer $layer_yaml_dir
-  delete_mojaloop_layer $app_layer $layer_yaml_dir
+  delete_mojaloop_vnext_layer $app_layer $layer_yaml_dir
   current_dir=`pwd`
   cd $layer_yaml_dir
   yaml_non_dataresource_files=$(ls *.yaml | grep -v '^docker-' | grep -v "\-data\-" )
@@ -518,20 +554,29 @@ function install_mojaloop_layer() {
   check_pods_are_running "$app_layer"
 }
 
-function check_mojaloop_health {
-  # verify the health of the deployment 
-  for i in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
-    #curl -s  http://$i/health
-    if [[ `curl -s  --head --fail --write-out \"%{http_code}\" http://$i/health | \
-      perl -nle '$count++ while /\"status\":\"OK+/g; END {print $count}' ` -lt 1 ]] ; then
-      printf  " ** Error: [curl -s http://%s/health] endpoint healthcheck failed ** \n" "$i"
-      exit 1
-    else 
-      printf "    ==> curl -s http://%s/health is ok \n" $i 
-    fi
-    sleep 2 
-  done 
+function check_mojaloop_vnext_health {
+    printf "========================================================================================\n"
+    printf "Checking Mojaloop vNext Deployment Health\n"
+    printf "========================================================================================\n"
+    
+    for i in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
+        printf "Checking health of endpoint: %s\n" "$i"
+        
+        # Perform curl with timeout and store response status code in a variable
+        http_code=$(curl -s --head --fail --max-time 5 --write-out "%{http_code}" "http://$i/health")
+        
+        # Check if the response status code indicates success (2xx)
+        if [[ "$http_code" =~ ^[2][0-9][0-9]$ ]]; then
+            printf "==> Health check for endpoint http://%s/health succeeded\n" "$i"
+        else
+            printf "** Error: Health check for endpoint http://%s/health failed (HTTP status code: %s)\n" "$i" "$http_code"
+            # You can choose to exit here if you want to stop the script immediately
+        fi
+        
+        sleep 2
+    done
 }
+
 
 check_status() {
   local exit_code=$?
@@ -548,7 +593,6 @@ function restore_demo_data {
   local mongo_data_dir=$1
   echo $mongo_data_dir 
   local ttk_files_dir=$2
-
 
   error_message=" restoring the mongo database data failed "
   trap 'handle_warning $LINENO "$error_message"' ERR
@@ -695,7 +739,7 @@ function print_end_banner {
 
 function print_stats {
   # print out all the elapsed times in the timer_array
-  printf "\n********* mini-loop stats *******************************\n"
+  printf "\n********* ndogo-loop stats *******************************\n"
   printf "kubernetes distro:version  [%s]:[%s] \n" "$k8s_distro" "$k8s_version"
 
   printf "installation options [%s] \n" "$install_opt"
@@ -719,7 +763,7 @@ function print_stats {
   for key in "${!memstats_array[@]}"; do
     printf "%-14s| %s\n" "$key" "${memstats_array[$key]}"
   done
-  printf "\n************ mini-loop stats ******************************\n"
+  printf "\n************ ndogo-loop stats ******************************\n"
 }
 
 function print_success_message { 
