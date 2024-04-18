@@ -538,7 +538,7 @@ function delete_mojaloop_vnext_layer() {
 function install_mojaloop_vnext_layer() { 
   local app_layer="$1"
   local layer_yaml_dir="$2"
-  printf "==> installing the mojaloop [ %s ] application layer using yamls from [ %s ] \n" $app_layer $layer_yaml_dir
+  printf "==> installing the MOjaloop vNext [ %s ] application layer using yamls from [ %s ] \n" $app_layer $layer_yaml_dir
   delete_mojaloop_vnext_layer $app_layer $layer_yaml_dir
   current_dir=`pwd`
   cd $layer_yaml_dir
@@ -785,12 +785,11 @@ function showUsage {
 		exit 1
 	else
 echo  "USAGE: $0 -m <mode> [-d dns domain] [-n namespace] [-t secs] [-o options] [-f] 
-Example 1 : $0 -m install_ml  # install mojaloop (vnext) 
-Example 2 : $0 -m install_ml -n namespace1  # install mojaloop (vnext)
-Example 3 : $0 -m delete_ml  # delete mojaloop  (vnext)  
-
+Example 1 : $0 -m install_mlvn  # install Mojaloop vNext 
+Example 2 : $0 -m install_ml -n namespace1  # install MOjaloop vNext
+Example 3 : $0 -m delete_ml  # delete Mojaloop vNext
 Options:
--m mode ............ install_ml|delete_ml
+-m mode ............ install_mlvn|delete_mlvn
 -d domain name ..... domain name for ingress hosts e.g mydomain.com (TBD) 
 -n namespace ....... the kubernetes namespace to deploy mojaloop into 
 -t secs ............ number of seconds (timeout) to wait for pods to all be reach running state

@@ -34,6 +34,7 @@ VNEXT_LOCAL_REPO_DIR="$HOME/tmp/platform-shared-tools"
 VNEXT_GITHUB_REPO="https://github.com/mojaloop/platform-shared-tools" 
 VNEXT_BRANCH="beta1"
 MANIFESTS_DIR=$VNEXT_LOCAL_REPO_DIR/packages/installer/manifests
+echo "DEBUG: MANIFESTS_DIR = $MANIFESTS_DIR" 
 MONGO_IMPORT_DIR=$VNEXT_LOCAL_REPO_DIR/packages/deployment/docker-compose-apps/ttk_files/mongodb
 MOJALOOP_CONFIGURE_FLAGS_STR=" -d $MANIFESTS_DIR " 
 echo "DBG> MANIFESTS_DIR = $MANIFESTS_DIR"
@@ -77,7 +78,7 @@ done
 
 # clone vnext deployment repo called platform-shared-tools locally if not already done
 # or if locally modified 
-clone_if_needed  $VNEXT_GITHUB_REPO $VNEXT_LOCAL_REPO_DIR $VNEXT_BRANCH
+#clone_if_needed  $VNEXT_GITHUB_REPO $VNEXT_LOCAL_REPO_DIR $VNEXT_BRANCH
 
 # call the common install script to install Mojaloop vNext into the kubernetes cluster
 install_vnext $MLVN_DEPLOY_TARGET

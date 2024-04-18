@@ -515,6 +515,7 @@ elif [[ "$mode" == "delete" ]]  ; then
 else 
     showUsage
 fi 
+rm -f LICENSE  
 
 
 
