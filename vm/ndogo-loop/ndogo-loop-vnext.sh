@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 # ndogo-loop.sh
-#    - ndogo is Swahilli for "small" and ndogo-loop installs mojaloop vNext in a light-weight, 
+#    - ndogo is Swahilli for "small" and ndogo-loop installs Mojaloop vNext in a light-weight, 
 #      simple and quick fashion for demo's testing and development.
 #      my hope and plan is that this helps to make Mojaloop vNext accessible and cheap to learn
 #      access and build skills required to run Mojaloop vNext in a cost efficent manner.
-#   - ndogo-loop is NOT intended for production as it HA, proper security testing and more BUT 
-#     it is intended to make available all the security features of Mojaloop vNext for you to learn and 
-#     experiment with              
+#   - ndogo-loop is NOT intended for production as it is not HA nor properly secured BUT 
+#     it is intended to make available all the application level security features of Mojaloop 
+#     vNext for you to learn and experiment with              
 # Author Tom Daly 
 # Date April 2024
-
-
-
 
 ################################################################################
 # MAIN
@@ -44,7 +41,7 @@ ERRFILE="/tmp/$MLVN_DEPLOY_TARGET-install.err"
 # read in the functions and common global vars
 source $COMMON_SCRIPTS_DIR/shared-functions.sh 
 # read in the main mojaloop install function 
-source $COMMON_SCRIPTS_DIR/install.sh 
+source $COMMON_SCRIPTS_DIR/ndogo-loop-install.sh 
 
 set_deploy_target  # deploy targets are ndogo-loop, AKS as at April 2024
 
