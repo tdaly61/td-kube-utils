@@ -36,7 +36,7 @@ function install_vnext {
     delete_mojaloop_vnext_layer "reporting" $MANIFESTS_DIR/reporting
     delete_mojaloop_vnext_layer "apps" $MANIFESTS_DIR/apps
     delete_mojaloop_vnext_layer "crosscut" $MANIFESTS_DIR/crosscut
-    #delete_mojaloop_vnext_infra_release  
+    delete_mojaloop_vnext_infra_release  
     print_end_banner $mlvn_deploy_target
   elif [[ "$mode" == "install_mlvn" ]]; then
     tstart=$(date +%s)
@@ -45,8 +45,8 @@ function install_vnext {
     copy_k8s_yaml_files_to_tmp
     source $HOME/mlenv/bin/activate 
     modify_local_mojaloop_vnext_yaml_and_charts  "$COMMON_SCRIPTS_DIR/configure.py" "$MANIFESTS_DIR"
-    #install_infra_from_local_chart $MANIFESTS_DIR/infra
-    #restore_demo_data $MONGO_IMPORT_DIR
+    install_infra_from_local_chart $MANIFESTS_DIR/infra
+    restore_demo_data $MONGO_IMPORT_DIR
     install_mojaloop_vnext_layer "crosscut" $MANIFESTS_DIR/crosscut
     install_mojaloop_vnext_layer "apps" $MANIFESTS_DIR/apps
     install_mojaloop_vnext_layer "reporting" $MANIFESTS_DIR/reporting

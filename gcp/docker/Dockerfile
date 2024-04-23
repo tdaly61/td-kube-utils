@@ -31,16 +31,16 @@ WORKDIR /home/$USER_NAME
 #     && chmod 755 ./kubectl \
 #     && mv kubectl /usr/local/bin
 
-# # Download and install Terraform for ${ARCH} architecture
-# RUN curl -L -o terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" \
-#   && unzip terraform.zip \
-#   && mv terraform /usr/local/bin/ \
-#   && rm terraform.zip 
+# Download and install Terraform for ${ARCH} architecture
+RUN curl -L -o terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" \
+  && unzip terraform.zip \
+  && mv terraform /usr/local/bin/ \
+  && rm terraform.zip 
 
-# RUN curl -L -o  helm.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}-linux-${ARCH}.tar.gz \ 
-#   && tar -zxvf ./helm.tar.gz \
-#   && mv linux-${ARCH}/helm /usr/local/bin/helm \ 
-#   && rm -rf helm.tar.gz linux-${ARCH}
+RUN curl -L -o  helm.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}-linux-${ARCH}.tar.gz \ 
+  && tar -zxvf ./helm.tar.gz \
+  && mv linux-${ARCH}/helm /usr/local/bin/helm \ 
+  && rm -rf helm.tar.gz linux-${ARCH}
 
 USER $USER_NAME
 RUN mkdir /home/$USER_NAME/work /home/$USER_NAME/terraform
