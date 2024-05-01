@@ -132,23 +132,25 @@ function check_manifests_dir_exists  {
   fi 
 }
 
-function set_deploy_target {
-  # determine where we are deploying Mojaloop vNext 
-  # e.g.  into ndogo-loop in a single OS or EKS cluster in AWS 
-  # note the options will expland if we add support for installs into AKS, OKE and other environments 
-  # this is necessary as there are (very) subtle differences between environments 
-  # but we still want to have essentiall one vNext install script no matter the environment 
-  local script_name=`basename $0`
-  if [[ "$script_name" == "ndogo-loop-vnext.sh" ]]; then 
-      ML_DEPLOY_TARGET="ndogo-loop"
-  elif [[ "$script_name" == "aks-vnext.sh" ]]; then 
-      ML_DEPLOY_TARGET="aks"
-  else 
-    printf "** Error the deploy target for Mojaloop vNext can't be determined from the script name \n"
-    printf "   the program name used is [ %s ] but expected ndogo-loop-vnext.sh or eks-vnext.sh ** \n" "$script_name" 
-    exit 1 
-  fi 
-}
+# function set_deploy_target {
+#   # determine where we are deploying Mojaloop vNext 
+#   # e.g.  into ndogo-loop in a single OS or EKS cluster in AWS 
+#   # note the options will expland if we add support for installs into AKS, OKE and other environments 
+#   # this is necessary as there are (very) subtle differences between environments 
+#   # but we still want to have essentiall one vNext install script no matter the environment 
+#   local script_name=`basename $0`
+#   if [[ "$script_name" == "ndogo-loop-vnext.sh" ]]; then 
+#       ML_DEPLOY_TARGET="ndogo-loop"
+#   elif [[ "$script_name" == "aks-vnext.sh" ]]; then 
+#       ML_DEPLOY_TARGET="aks"
+#   elif [[ "$script_name" == "gke-vnext.sh" ]]; then 
+#       ML_DEPLOY_TARGET="gke"
+#   else 
+#     printf "** Error the deploy target for Mojaloop vNext can't be determined from the script name \n"
+#     printf "   the program name used is [ %s ] but expected ndogo-loop-vnext.sh or eks-vnext.sh , gke-vnext.sh ** \n" "$script_name" 
+#     exit 1 
+#   fi 
+# }
 
 
 

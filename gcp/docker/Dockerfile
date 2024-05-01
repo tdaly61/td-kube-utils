@@ -6,8 +6,6 @@ FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:alpine
 RUN apk --update-cache add openjdk8-jre
 RUN gcloud components install app-engine-java kubectl kustomize terraform-tools
 
-
-
 ARG USER_NAME
 ARG USER_ID
 ARG ARCH
@@ -43,7 +41,7 @@ RUN curl -L -o  helm.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}-linux-${AR
   && rm -rf helm.tar.gz linux-${ARCH}
 
 USER $USER_NAME
-RUN mkdir /home/$USER_NAME/work /home/$USER_NAME/terraform
+RUN mkdir /home/$USER_NAME/vnext /home/$USER_NAME/terraform 
 COPY --chown=${USER_NAME}:${USER_NAME} install/bashrc /home/${USER_NAME}/.bashrc
 
 # RUN  echo "export KUBECONFIG=$HOME/.kube/config" >> /home/$USER_NAME/.bashrc \
