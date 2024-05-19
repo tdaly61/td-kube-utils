@@ -278,7 +278,7 @@ function do_k3s_install {
     printf "==> installing nginx ingress chart and wait for it to be ready " 
     su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx \
                       --repo https://kubernetes.github.io/ingress-nginx \
-                      -f $TD_KUBE_UTILS_BASE_DIR/shared/manifests/nginx-values.yaml" 
+                      -f $TD_KUBE_UTILS_BASE_DIR/manifests/nginx-values.yaml" 
     # TODO : check to ensure that the ingress is indeed running 
     nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
 
@@ -421,13 +421,11 @@ function showUsage {
 		exit 1
 	else
 echo  "USAGE: $0 -m [mode] -v [k8 version] -k [distro] 
-Example 1 : k8s-install-current.sh -m install -v 1.28 -k k3s # install k8s k3s version 1.28
-Example 2 : k8s-install-current.sh -m delete  -v 1.27 -k k3s # delete  k8s microk8s version 1.27
-Example 3 : k8s-install-current.sh -m install -k microk8s -v 1.26 # install k8s microk8s distro version 1.26
+Example 1 : ndogo-loop-k8s.sh -m install -v 1.28 -k k3s # install k8s k3s version 1.28
+Example 2 : ndogo-loop-k8s.sh -m delete  -v 1.27 -k k3s # delete  k8s microk8s version 1.27
 
 Options:
 -m mode ............... install|delete (-m is required)
--k kubernetes distro... microk8s|k3s (default=k3s as it installs across multiple linux distros)
 -v k8s version ........ 1.27|1.28 i.e. 2 latest k8s releases at time of vNext release
 -h|H .................. display this message
 "
@@ -440,10 +438,11 @@ Options:
 
 BASE_DIR=$( cd $(dirname "$0")/../.. ; pwd )
 RUN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # the directory that this script is run from 
-SCRIPTS_DIR="$( cd $(dirname "$0")/../scripts ; pwd )"
-echo "SCRIPTS_DIR=$SCRIPTS_DIR"
-TD_KUBE_UTILS_BASE_DIR="$( cd $(dirname "$SCRIPTS_DIR")/.. ; pwd )"
+
+TD_KUBE_UTILS_BASE_DIR="$( cd $(dirname "$SCRIPTS_DIR")/../.. ; pwd )"
 echo "TD_KUBE_UTILS_BASE_DIR=$TD_KUBE_UTILS_BASE_DIR"
+SCRIPTS_DIR="$TD_KUBE_UTILS_BASE_DIR/vm/ndogo-loop/scripts"
+echo "SCRIPTS_DIR=$SCRIPTS_DIR"
 
 DEFAULT_K8S_DISTRO="k3s"   # default to k3s 
 K8S_VERSION="" 
@@ -478,8 +477,6 @@ while getopts "m:k:v:u:hH" OPTION ; do
    case "${OPTION}" in
         m)	    mode="${OPTARG}"
         ;;
-        k)      k8s_distro="${OPTARG}"
-        ;;
         v)	    k8s_user_version="${OPTARG}"
         # ;;
         # u)      k8s_user="${OPTARG}"
@@ -504,22 +501,14 @@ verify_user
 
 if [[ "$mode" == "install" ]]  ; then
     check_resources_ok
-    set_k8s_distro
+    set_k8s_distro 
     set_k8s_version
     k8s_already_installed
     check_pi  # note microk8s on my pi still has some issues around cgroups 
     check_os_ok # todo add check to this once tested across other OS's more fully 
     install_prerequisites 
     add_hosts
-    if [[ "$k8s_distro" == "microk8s" ]]; then 
-        printf "** WIP: ndogo-loop for vNext with Microk8s is not yet sufficiently tested \n"
-        printf "        for example microk8s v1.28 install on Ubuntu 22.04 ARM64 seemed to have some issues \n"
-        printf "        => please select k3s for now   *** \n"
-        exit 1 
-        #do_microk8s_install
-    else 
-        do_k3s_install
-    fi 
+    do_k3s_install
     install_k8s_tools
     add_helm_repos 
     configure_k8s_user_env
@@ -527,7 +516,7 @@ if [[ "$mode" == "install" ]]  ; then
     printf "==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for Mojaloop vNext deployment \n" \
                 "$k8s_distro" "$K8S_VERSION" "$k8s_user"
     printf "    To deploy Mojaloop vNext, please su - %s from root or login as user [%s] and then \n"  "$k8s_user" "$k8s_user"
-    printf "    please execute %s/ndogo-loop-vnext.sh\n" "$RUN_DIR"
+    printf "    please execute %s/ndogo-loop.sh\n" "$RUN_DIR"
     print_end_message 
 elif [[ "$mode" == "delete" ]]  ; then
     delete_k8s 

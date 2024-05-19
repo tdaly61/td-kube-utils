@@ -35,11 +35,11 @@ echo "DEBUG: MANIFESTS_DIR = $MANIFESTS_DIR"
 MONGO_IMPORT_DIR=$VNEXT_LOCAL_REPO_DIR/packages/deployment/docker-compose-apps/ttk_files/mongodb
 MOJALOOP_CONFIGURE_FLAGS_STR=" -d $MANIFESTS_DIR " 
 echo "DBG> MANIFESTS_DIR = $MANIFESTS_DIR"
-LOGFILE="/tmp/$MLVN_DEPLOY_TARGET-install.log"
-ERRFILE="/tmp/$MLVN_DEPLOY_TARGET-install.err"
+LOGFILE="/tmp/ndogo-loop-install.log"
+ERRFILE="/tmp/ngogo-loop-install.err"
 
 # read in the functions and common global vars
-source $COMMON_SCRIPTS_DIR/shared-functions.sh 
+source $COMMON_SCRIPTS_DIR/ndogo-loop-shared-functions.sh 
 # read in the main mojaloop install function 
 source $COMMON_SCRIPTS_DIR/ndogo-loop-install.sh 
 
@@ -75,7 +75,7 @@ done
 
 # clone vnext deployment repo called platform-shared-tools locally if not already done
 # or if locally modified 
-#clone_if_needed  $VNEXT_GITHUB_REPO $VNEXT_LOCAL_REPO_DIR $VNEXT_BRANCH
+clone_if_needed  $VNEXT_GITHUB_REPO $VNEXT_LOCAL_REPO_DIR $VNEXT_BRANCH
 
 # call the common install script to install Mojaloop vNext into the kubernetes cluster
 install_vnext $MLVN_DEPLOY_TARGET

@@ -36,7 +36,7 @@ function install_vnext {
     delete_mojaloop_vnext_layer "reporting" $MANIFESTS_DIR/reporting
     delete_mojaloop_vnext_layer "apps" $MANIFESTS_DIR/apps
     delete_mojaloop_vnext_layer "crosscut" $MANIFESTS_DIR/crosscut
-    #delete_mojaloop_vnext_infra_release  
+    delete_mojaloop_vnext_infra_release  
     print_end_banner $mlvn_deploy_target
   elif [[ "$mode" == "install_mlvn" ]]; then
     tstart=$(date +%s)
@@ -45,24 +45,24 @@ function install_vnext {
     copy_k8s_yaml_files_to_tmp
     source $HOME/mlenv/bin/activate 
     modify_local_mojaloop_vnext_yaml_and_charts  "$COMMON_SCRIPTS_DIR/configure.py" "$MANIFESTS_DIR"
-    #install_infra_from_local_chart $MANIFESTS_DIR/infra
-    #restore_demo_data $MONGO_IMPORT_DIR
+    install_infra_from_local_chart $MANIFESTS_DIR/infra
+    restore_mongo_demo_data $MONGO_IMPORT_DIR
     install_mojaloop_vnext_layer "crosscut" $MANIFESTS_DIR/crosscut
     install_mojaloop_vnext_layer "apps" $MANIFESTS_DIR/apps
     install_mojaloop_vnext_layer "reporting" $MANIFESTS_DIR/reporting
 
-    # if [[ "$ARCH" == "x86_64" ]] || [[ "$NODE_ARCH" == "amd64" ]]; then 
-    #   install_mojaloop_vnext_layer "ttk" $MANIFESTS_DIR/ttk
-    # else
-    #   printf "=> running on arm64 deploy ttks from /tmp/ttk\n"
-    #   # Note today (Nov 2023) we assume that for arm64 so the TTK images are already built locally
-    #   #      per the instructions in the readme.md this is an interim fix until we get builds for  arm64 
-    #   #      see: https://github.com/mojaloop/project/issues/3637
-    #   install_mojaloop_vnext_layer "ttk" /tmp/ttk
-    # fi
-    # configure_ttk  $REPO_BASE_DIR/packages/deployment/docker-compose-apps/ttk_files
-    # configure_elastic_search $REPO_BASE_DIR
-    # check_urls
+    if [[ "$ARCH" == "x86_64" ]] || [[ "$NODE_ARCH" == "amd64" ]]; then 
+      install_mojaloop_vnext_layer "ttk" $MANIFESTS_DIR/ttk
+    else
+      printf "=> running on arm64 deploy ttks from /tmp/ttk\n"
+      # Note today (Nov 2023) we assume that for arm64 so the TTK images are already built locally
+      #      per the instructions in the readme.md this is an interim fix until we get builds for  arm64 
+      #      see: https://github.com/mojaloop/project/issues/3637
+      install_mojaloop_vnext_layer "ttk" /tmp/ttk
+    fi
+    configure_ttk  $REPO_BASE_DIR/packages/deployment/docker-compose-apps/ttk_files
+    configure_elastic_search $REPO_BASE_DIR
+    check_urls
 
     tstop=$(date +%s)
     telapsed=$(timer $tstart $tstop)

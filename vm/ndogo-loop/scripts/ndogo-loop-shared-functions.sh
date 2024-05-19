@@ -139,9 +139,9 @@ function set_deploy_target {
   # this is necessary as there are (very) subtle differences between environments 
   # but we still want to have essentiall one vNext install script no matter the environment 
   local script_name=`basename $0`
-  if [[ "$script_name" == "ndogo-loop-vnext.sh" ]]; then 
+  if [[ "$script_name" == "ndogo-loop.sh" ]]; then 
       ML_DEPLOY_TARGET="ndogo-loop"
-  elif [[ "$script_name" == "aks-vnext.sh" ]]; then 
+  elif [[ "$script_name" == "ndogo-loop-aks.sh" ]]; then 
       ML_DEPLOY_TARGET="aks"
   else 
     printf "** Error the deploy target for Mojaloop vNext can't be determined from the script name \n"
@@ -589,14 +589,41 @@ check_status() {
   fi
 }
 
-function restore_demo_data {
+function dump_mongo_demo_data {
+  local mongo__dir=$1
+  echo $mongo_data_dir 
+  error_message=" dumping the mongo database data failed "
+  trap 'handle_warning $LINENO "$error_message"' ERR
+  printf "==> dumping mongodb demonstration/test data and ttk configs  "
+  # temporary measure to inject base participants data into switch 
+  printf "   - dumping mongodb data " 
+  mongopod=`kubectl get pods --namespace $NAMESPACE | grep -i mongodb |awk '{print $1}'` 
+  mongo_root_pw=`kubectl get secret mongodb -o jsonpath='{.data.MONGO_INITDB_ROOT_PASSWORD}'| base64 -d` 
+  #kubectl cp $mongo_data_dir/mongodata.gz $mongopod:/tmp >/dev/null 2>&1 # copy the demo / test data into the mongodb pod
+  echo "$mongo_data_dir"
+  kubectl cp $mongo_data_dir/mongodump-beta.gz $mongopod:/tmp/mongodump.gz >/dev/null 2>&1 # copy the demo / test data into the mongodb pod
+  # drop existing collections 
+    # kubectl exec --stdin --tty $mongopod -- mongosh  -u root -p $mongo_root_pw  --eval "use accounts_and_balances_bc_builtin_ledger" --eval  "db.dropDatabase()" 
+    # kubectl exec --stdin --tty $mongopod -- mongosh -u root -p $mongo_root_pw --eval "use  accounts_and_balances_bc_coa"  --eval  "db.dropDatabase()" 
+    # kubectl exec --stdin --tty $mongopod -- mongosh -u root -p $mongo_root_pw --eval "use  participants"  --eval  "db.dropDatabase()" 
+    # kubectl exec --stdin --tty $mongopod -- mongosh -u root -p $mongo_root_pw --eval "use  security"  --eval  "db.dropDatabase()" 
+                 
+  # run the mongorestore 
+  kubectl exec --stdin --tty $mongopod -- mongodump  -u root -p $mongo_root_pw \
+               --gzip --archive=/tmp/mongodump.gz --authenticationDatabase admin > /dev/null 2>&1
+  printf " [ ok ] \n"
+}
+
+
+
+function restore_mongo_demo_data {
   local mongo_data_dir=$1
   echo $mongo_data_dir 
   local ttk_files_dir=$2
 
   error_message=" restoring the mongo database data failed "
   trap 'handle_warning $LINENO "$error_message"' ERR
-  printf "==> restoring demonstration/test data and ttk configs  "
+  printf "==> restoring mongodb demonstration/test data and ttk configs  "
   # temporary measure to inject base participants data into switch 
   printf "   - restoring mongodb data " 
   mongopod=`kubectl get pods --namespace $NAMESPACE | grep -i mongodb |awk '{print $1}'` 
