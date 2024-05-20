@@ -14,8 +14,8 @@ function set_user {
 #### main #######################################
 
 ## set env variables to enable navigating an finding things 
-MINI_LOOP_SCRIPTS_DIR="$( cd $(dirname "$0") ; pwd )"
-REPO_BASE_DIR="$( cd $(dirname "$MINI_LOOP_SCRIPTS_DIR")/../.. ; pwd )"
+NDOGO_LOOP_SCRIPTS_DIR="$( cd $(dirname "$0") ; pwd )"
+REPO_BASE_DIR="$( cd $(dirname "$NDOGO_LOOP_SCRIPTS_DIR")/../.. ; pwd )"
 COMMON_SCRIPTS_DIR=$REPO_BASE_DIR/packages/installer/scripts
 BASE_DIR="$( cd $(dirname "$0")/../../.. ; pwd )"
 MANIFESTS_DIR=$BASE_DIR/packages/installer/manifests

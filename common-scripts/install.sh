@@ -8,8 +8,8 @@
 function install_vnext {
   local mlvn_deploy_target="$1"
   record_memory_use "at_start"
-  print_start_banner $mlvn_deploy_target
   get_arch_of_nodes
+  print_start_banner $mlvn_deploy_target
   if [[ $mlvn_deploy_target == "ndogo-loop" ]]; then 
     check_not_inside_docker_container   # ndogo-loop only 
     set_arch  
@@ -18,7 +18,7 @@ function install_vnext {
   elif [[ $mlvn_deploy_target == "GKE" ]]; then 
     check_access_to_cluster  # GKE only 
   fi 
-  check_repo_owner_not_root $REPO_BASE_DIR
+  check_repo_owner_not_root $VNEXT_LOCAL_REPO_DIR
   check_user
   set_k8s_version 
   check_k8s_version_is_current 
@@ -52,6 +52,11 @@ function install_vnext {
     install_mojaloop_vnext_layer "reporting" $MANIFESTS_DIR/reporting
 
     if [[ "$ARCH" == "x86_64" ]] || [[ "$NODE_ARCH" == "amd64" ]]; then 
+      # in vNext beta the ttk manifests use an image tag is vnext which is fine for arm64 but 
+      # for x86_64 and AMD it needs to be v15.0.0
+      #image: ml-testing-toolkit-client-lib:vnext 
+      #perl -p  -i -e 's/lib:vnext/lib:v1.2.2/g' $MANIFESTS_DIR/ttk/ttk-cli.yaml
+      perl -p -i -e 's/ml-testing-toolkit-client-lib:vnext/mojaloop\/ml-testing-toolkit-client-lib:v1.2.2/g' $MANIFESTS_DIR/ttk/ttk-cli.yaml
       install_mojaloop_vnext_layer "ttk" $MANIFESTS_DIR/ttk
     else
       printf "=> running on arm64 deploy ttks from /tmp/ttk\n"
@@ -60,8 +65,8 @@ function install_vnext {
       #      see: https://github.com/mojaloop/project/issues/3637
       install_mojaloop_vnext_layer "ttk" /tmp/ttk
     fi
-    configure_ttk  $REPO_BASE_DIR/packages/deployment/docker-compose-apps/ttk_files
-    configure_elastic_search $REPO_BASE_DIR
+    configure_ttk  $VNEXT_LOCAL_REPO_DIR/packages/deployment/docker-compose-apps/ttk_files
+    configure_elastic_search $VNEXT_LOCAL_REPO_DIR
     check_urls
 
     tstop=$(date +%s)

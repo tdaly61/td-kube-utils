@@ -14,14 +14,10 @@ ARG BASHRC_FILE
 ARG HELM_VERSION
  
 USER root
-#RUN apt-get update 
 RUN apk update && apk add --no-cache bash bash-completion perl py3-ruamel.yaml curl unzip perl git make 
-#RUN apk add  bash-completion perl py3-ruamel.yaml 
-#    &&   pip3 install ruamel.yaml
 
 # create a new user with the provided name and ID
 RUN adduser -u $USER_ID -s /bin/bash -D $USER_NAME
-
 
 WORKDIR /home/$USER_NAME
 # install latest stable kubectl
@@ -43,15 +39,5 @@ RUN curl -L -o  helm.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}-linux-${AR
 USER $USER_NAME
 RUN mkdir /home/$USER_NAME/vnext /home/$USER_NAME/terraform 
 COPY --chown=${USER_NAME}:${USER_NAME} install/bashrc /home/${USER_NAME}/.bashrc
-
-# RUN  echo "export KUBECONFIG=$HOME/.kube/config" >> /home/$USER_NAME/.bashrc \
-#     && echo "export PATH=/home/$USER_NAME/terraform:$PATH" >> /home/$USER_NAME/.bashrc \ 
-#     && echo "alias k=kubectl " >>  /home/$USER_NAME/.bashrc  \
-#     && echo "complete -F __start_kubectl k " >>  /home/$USER_NAME/.bashrc  \
-#     && echo "alias ksetns=\"kubectl config set-context --current --namespace\" " >>  /home/$USER_NAME/.bashrc  \
-#     && echo "alias ksetuser=\"kubectl config set-context --current --user\" "  >>   /home/$USER_NAME/.bashrc  \
-#     && echo "PS1='\u\w:$ '" >>   /home/$USER_NAME/.bashrc \
-#     && echo "alias cdaks='cd /terraform/aks'" >>   /home/$USER_NAME/.bashrc \ 
-#     && echo "alias azlight='az config set core.theme=light'" >> /home/$USER_NAME/.bashrc 
 
 ENTRYPOINT ["/bin/bash"]

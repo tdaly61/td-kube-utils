@@ -18,9 +18,6 @@ alias cdi="cd ~/vnext/platform-shared-tools/packages/installer"
 alias cdml="cd ~/vnext/platform-shared-tools/packages/installer/mini-loop"
 alias cdaws="cd ~/vnext/platform-shared-tools/packages/installer/gke"
 alias cdvn="cd ~/vnext/platform-shared-tools"
-alias cdku="cd ~/td-kube-utils"
-alias cdnl="cd ~/td-kube-utils/vm/ndogo-loop"
-export VNEXT_REPO_DIR=$HOME/vnext/platform-shared-tools
-export PATH=$PATH:$VNEXT_REPO_DIR/packages/installer/gke/scripts:$VNEXT_REPO_DIR/packages/installer/scripts
-export PATH=$PATH:/workspace/scripts
-
+# alias cdku="cd ~/td-kube-utils"
+# alias cdnl="cd ~/td-kube-utils/vm/ndogo-loop"
+export PATH=$PATH:$HOME/gcp-scripts:$HOME/common-scripts

@@ -72,7 +72,7 @@ done
 
 # clone vnext deployment repo called platform-shared-tools locally if not already done
 # or if locally modified 
-clone_if_needed  $VNEXT_GITHUB_REPO $VNEXT_LOCAL_REPO_DIR $VNEXT_BRANCH
+#clone_if_needed  $VNEXT_GITHUB_REPO $VNEXT_LOCAL_REPO_DIR $VNEXT_BRANCH
 
 # call the common install script to install Mojaloop vNext into the kubernetes cluster
 install_vnext $MLVN_DEPLOY_TARGET

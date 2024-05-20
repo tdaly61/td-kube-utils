@@ -7,7 +7,7 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
 # install nginx 
 helm install nginx ingress-nginx/ingress-nginx 
-  --set ingressClassResource.name=nginx-ext
+  --set controller.ingressClassResource.name=nginx-ext
   # --set controller.service.type=LoadBalancer \
   # --set controller.ingressClassResource.default=true \
 

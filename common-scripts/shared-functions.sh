@@ -1,6 +1,6 @@
 # common bash functions and variables for deloying Mojaloop vNext
-# T Daly 
-# Sept 2023
+# Author: Tom Daly 
+# May 2024
 
 handle_error() {
   local exit_code=$?
@@ -112,6 +112,7 @@ function check_not_inside_docker_container {
 }
 
 function check_access_to_cluster {
+  printf "==> verifying cluster access    " 
   # check that the cluster is accessible 
   kubectl get nodes > /dev/null 2>&1 
   if [[ "$?" -ne 0 ]]; then
@@ -121,6 +122,8 @@ function check_access_to_cluster {
     printf "           - if running ndogo-loop mode, the .bashrc has not yet been sourced or the user logged out/in \n" 
     printf "           - if using EKS mode then the AWS credentials have likely expired => run aws-mfa \n" 
     exit 1 
+  else  
+    printf " [ ok ] \n "
   fi
 }
 
@@ -286,7 +289,7 @@ function copy_k8s_yaml_files_to_tmp {
 
 function configure_extra_options {
   printf "==> configuring which Mojaloop vNext options to install   \n"
-  printf "    ** INFO: no extra options implemented or required for ndogo-loop vNext at this time ** \n"
+  printf "    ** INFO: no extra options implemented or required for vNext deployment ** \n"
   # for mode in $(echo $install_opt | sed "s/,/ /g"); do
   #   case $mode in
   #     logging)
@@ -384,7 +387,7 @@ function add_helm_repos {
 
 
 function delete_mojaloop_vnext_infra_release {
-  printf "==> delete resources in the mojaloop [ infrastructure ] layer " 
+  printf "==> delete resources in the Mojaloop vNext [ infrastructure ] layer " 
   mlvn_exists=`helm ls -a --namespace $NAMESPACE | grep $HELM_INFRA_RELEASE | awk '{print $1}' `
   if [ ! -z $mlvn_exists ] && [ "$mlvn_exists" == "$HELM_INFRA_RELEASE" ]; then 
     helm delete $HELM_INFRA_RELEASE --namespace $NAMESPACE >> $LOGFILE 2>>$ERRFILE
@@ -434,7 +437,7 @@ function delete_mojaloop_vnext_infra_release {
 
 function install_infra_from_local_chart  {
   local infra_dir=$1
-  printf "start : ndogo-loop Mojaloop vNext install infrastructure services [%s]\n" "`date`" 
+  printf "start : Mojaloop vNext install infrastructure services [%s]\n" "`date`" 
   delete_mojaloop_vnext_infra_release
   repackage_infra_helm_chart $infra_dir
   # install the chart
@@ -540,7 +543,7 @@ function delete_mojaloop_vnext_layer() {
 function install_mojaloop_vnext_layer() { 
   local app_layer="$1"
   local layer_yaml_dir="$2"
-  printf "==> installing the MOjaloop vNext [ %s ] application layer using yamls from [ %s ] \n" $app_layer $layer_yaml_dir
+  printf "==> installing the Mojaloop vNext [ %s ] application layer using yamls from [ %s ] \n" $app_layer $layer_yaml_dir
   delete_mojaloop_vnext_layer $app_layer $layer_yaml_dir
   current_dir=`pwd`
   cd $layer_yaml_dir
@@ -729,13 +732,14 @@ function check_urls {
 
 function print_start_banner { 
   printf "\n\n****************************************************************************************\n"
-  printf "            --  Mojaloop vNext install mode = %s -- \n"  "$1"
+  printf "            --  Mojaloop vNext install -- \n" 
+  printf "                kubernetes target [ %s ] \n"  "$1"
   printf "********************* << START  >> *****************************************************\n\n" 
 }
 
 function print_end_banner {
   printf "\n\n****************************************************************************************\n"
-  printf "            -- Mojaloop vNext install mode = %s  -- \n" "$1"
+  printf "            -- Mojaloop vNext install -- \n"
   printf "********************* << END >> ********************************************************\n\n"
 }
 
