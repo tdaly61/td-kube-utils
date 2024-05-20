@@ -41,8 +41,9 @@ function install_vnext {
   elif [[ "$mode" == "install_mlvn" ]]; then
     tstart=$(date +%s)
     printf "     <start> :  Mojaloop vNext install [%s]\n" "`date`" >> $LOGFILE
-    configure_extra_options 
     copy_k8s_yaml_files_to_tmp
+    # temp fix for mongodb helm chart so mongo-express does not hang
+    perl -i.bak -pe 's/tag: 7.0/tag: 7.0.2/g' $MANIFESTS_DIR/infra/infra-helm/values.yaml
     source $HOME/mlenv/bin/activate 
     modify_local_mojaloop_vnext_yaml_and_charts  "$COMMON_SCRIPTS_DIR/configure.py" "$MANIFESTS_DIR"
     install_infra_from_local_chart $MANIFESTS_DIR/infra

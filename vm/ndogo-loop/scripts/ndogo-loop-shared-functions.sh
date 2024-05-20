@@ -282,23 +282,6 @@ function copy_k8s_yaml_files_to_tmp {
   printf " [ ok ] \n"
 }
 
-function configure_extra_options {
-  printf "==> configuring which Mojaloop vNext options to install   \n"
-  printf "    ** INFO: no extra options implemented or required for ndogo-loop vNext at this time ** \n"
-  # for mode in $(echo $install_opt | sed "s/,/ /g"); do
-  #   case $mode in
-  #     logging)
-  #       MOJALOOP_CONFIGURE_FLAGS_STR+="--logging "
-  #       ram_warning="true"
-  #       ;;
-  #     *)
-  #         printf " ** Error: specifying -o option   \n"
-  #         printf "    try $0 -h for help \n" 
-  #         exit 1 
-  #       ;;
-  #   esac
-  # done 
-} 
 
 function set_and_create_namespace { 
   ## Set and create namespace if necessary 
